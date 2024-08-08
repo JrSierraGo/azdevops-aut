@@ -8,12 +8,13 @@ import dotenv from "dotenv";
 import data from './data.json';
 
 dotenv.config();
-const ORG_URL       : string               = process.env.ORGANIZATION_URL ?? "";
-const TOKEN         : string               = process.env.PERSONAL_ACCESS_TOKEN ?? "";
-const PROJECT_NAME  : string | undefined   = process.env.PROJECT_NAME;
-const PR_TITLE      : string | undefined   = process.env.TITLE_PR;
-const SOURCE_BRANCH : string | undefined   = process.env.SOURCE_BRANCH;
-const TARGET_BRANCH : string | undefined   = process.env.TARGET_BRANCH;
+const ORG_URL       : string = process.env.ORGANIZATION_URL ?? "";
+const TOKEN         : string = process.env.PERSONAL_ACCESS_TOKEN ?? "";
+const PROJECT_NAME  : string = process.env.PROJECT_NAME ?? "";
+const PR_TITLE      : string = process.env.TITLE_PR ?? "";
+const SOURCE_BRANCH : string = process.env.SOURCE_BRANCH ?? "";
+const TARGET_BRANCH : string = process.env.TARGET_BRANCH ?? "";
+const REF_BRANCH    : string = "refs/heads/";
 
 
 async function main(){
@@ -27,10 +28,10 @@ async function createPullRequest(repoName:string, sourceBranch?:string, targetBr
     let git: IGitApi = await getGitApi();
     let lastPRId: number = await getLastPRId(git, repoName, sourceBranch);
     let workItems: ResourceRef[] = await getWorkItems(git, repoName, lastPRId);
+    let objectPR: GitPullRequest = creteObjectPR(titlePR, sourceBranch, workItems);
 
    try {
-     let pullRequest: GitPullRequest = await git.createPullRequest({ title: titlePR, sourceRefName: `refs/heads/${sourceBranch}`, targetRefName: `refs/heads/${targetBranch}`, workItemRefs: workItems}, repoName, PROJECT_NAME);
-
+     let pullRequest: GitPullRequest = await git.createPullRequest(objectPR, repoName, PROJECT_NAME);
      console.log(`PR Created ${pullRequest.repository?.webUrl}/pullrequest/${pullRequest.pullRequestId}`);
      return pullRequest;
    } catch (error) {
@@ -40,16 +41,15 @@ async function createPullRequest(repoName:string, sourceBranch?:string, targetBr
    }
 }
 
-async function getLastPRId(git: IGitApi, repoName: string, sourceBranch?: string) {
+async function getLastPRId(git: IGitApi, repoName: string, sourceBranch?: string) : Promise<number> {
     try {
-        let pr: GitPullRequest[] = await git.getPullRequests(repoName, { targetRefName: `refs/heads/${sourceBranch}`, status: PullRequestStatus.Completed, }, PROJECT_NAME, undefined, undefined, 1);
 
-        let prId: number = NaN;
+        let searchCriteria = getPRSearchCriteria(sourceBranch, PullRequestStatus.Completed);
+        let pr: GitPullRequest[] = await git.getPullRequests(repoName, searchCriteria, PROJECT_NAME, undefined, undefined, 1);
 
-        if (pr && pr.length != 0) {
-            prId = pr[0].pullRequestId ? pr[0].pullRequestId : prId;
-        }
-        return prId;
+       return (pr && pr.length != 0 && pr[0].pullRequestId)  
+            ? pr[0].pullRequestId 
+            : NaN;
     } catch (error) {
         let e = error as Error;
         console.error("Error in getLastPRId: ", repoName, e.message);
@@ -57,14 +57,28 @@ async function getLastPRId(git: IGitApi, repoName: string, sourceBranch?: string
     }
 }
 
-async function getWorkItems(git: IGitApi, nameMS: string, idPR: number) {
+function creteObjectPR(titlePR?:string, sourceBranch?: string, workItems?: ResourceRef[]) : GitPullRequest {
+    return { 
+        title: titlePR, 
+        sourceRefName: `${REF_BRANCH}${sourceBranch}`,
+        workItemRefs: workItems
+    };
+}
+
+function getPRSearchCriteria(branch: string | undefined, status: PullRequestStatus) {
+    return { 
+        targetRefName: `${REF_BRANCH}${branch}`, 
+        status: status, 
+    };
+}
+
+async function getWorkItems(git: IGitApi, repoName: string, idPR: number): Promise<ResourceRef[]> {
     try {
-        return await git.getPullRequestWorkItemRefs(nameMS, idPR, PROJECT_NAME);
+        return await git.getPullRequestWorkItemRefs(repoName, idPR, PROJECT_NAME);
     } catch (error) {
         let e = error as Error;
-        console.error("Error in getWorkItems: ", nameMS, idPR, e.message);
+        console.error("Error in getWorkItems: ", repoName, idPR, e.message);
         return [];
-        //throw new Error("Error al obtener los workItems");   
     }
 }
 
