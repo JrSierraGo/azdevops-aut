@@ -1,7 +1,7 @@
 import { getPersonalAccessTokenHandler, WebApi } from 'azure-devops-node-api';
 import { IGitApi } from 'azure-devops-node-api/GitApi';
 import { ResourceRef } from 'azure-devops-node-api/interfaces/common/VSSInterfaces';
-import { GitPullRequest, PullRequestStatus } from 'azure-devops-node-api/interfaces/GitInterfaces';
+import { GitPullRequest, GitPullRequestSearchCriteria, PullRequestStatus } from 'azure-devops-node-api/interfaces/GitInterfaces';
 import { IRequestHandler } from 'azure-devops-node-api/interfaces/common/VsoBaseInterfaces';
 import dotenv from "dotenv";
 
@@ -28,7 +28,7 @@ async function createPullRequest(repoName:string, sourceBranch?:string, targetBr
     let git: IGitApi = await getGitApi();
     let lastPRId: number = await getLastPRId(git, repoName, sourceBranch);
     let workItems: ResourceRef[] = await getWorkItems(git, repoName, lastPRId);
-    let objectPR: GitPullRequest = creteObjectPR(titlePR, sourceBranch, workItems);
+    let objectPR: GitPullRequest = creteObjectPR(titlePR, sourceBranch, targetBranch, workItems);
 
    try {
      let pullRequest: GitPullRequest = await git.createPullRequest(objectPR, repoName, PROJECT_NAME);
@@ -44,7 +44,7 @@ async function createPullRequest(repoName:string, sourceBranch?:string, targetBr
 async function getLastPRId(git: IGitApi, repoName: string, sourceBranch?: string) : Promise<number> {
     try {
 
-        let searchCriteria = getPRSearchCriteria(sourceBranch, PullRequestStatus.Completed);
+        let searchCriteria: GitPullRequestSearchCriteria = getPRSearchCriteria(sourceBranch, PullRequestStatus.Completed);
         let pr: GitPullRequest[] = await git.getPullRequests(repoName, searchCriteria, PROJECT_NAME, undefined, undefined, 1);
 
        return (pr && pr.length != 0 && pr[0].pullRequestId)  
@@ -57,15 +57,16 @@ async function getLastPRId(git: IGitApi, repoName: string, sourceBranch?: string
     }
 }
 
-function creteObjectPR(titlePR?:string, sourceBranch?: string, workItems?: ResourceRef[]) : GitPullRequest {
+function creteObjectPR(titlePR?:string, sourceBranch?: string, targetBranch?:string, workItems?: ResourceRef[]) : GitPullRequest {
     return { 
         title: titlePR, 
         sourceRefName: `${REF_BRANCH}${sourceBranch}`,
+        targetRefName: `${REF_BRANCH}${targetBranch}`,
         workItemRefs: workItems
     };
 }
 
-function getPRSearchCriteria(branch: string | undefined, status: PullRequestStatus) {
+function getPRSearchCriteria(branch: string | undefined, status: PullRequestStatus): GitPullRequestSearchCriteria {
     return { 
         targetRefName: `${REF_BRANCH}${branch}`, 
         status: status, 
