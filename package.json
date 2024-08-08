@@ -1,0 +1,17 @@
+{
+  "name": "azdevops-aut",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^22.1.0",
+    "azure-devops-node-api": "^14.0.1",
+    "dotenv": "^16.4.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "scripts": {
+    "start": "npx ts-node index.ts",
+    "build": "tsc"
+  }
+}
