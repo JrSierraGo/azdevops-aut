@@ -1,5 +1,9 @@
 {
     "repositories":[
         "ms-name"
-    ]
+    ],
+    "variables": {
+        "MY_VAR1": "value",
+        "MY_VAR2": "value2"
+    }
 }
