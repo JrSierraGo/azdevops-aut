@@ -5,5 +5,7 @@
     "variables": {
         "MY_VAR1": "value",
         "MY_VAR2": "value2"
-    }
+    },
+    "pullRequestId":111,
+    "workItemId": 222
 }

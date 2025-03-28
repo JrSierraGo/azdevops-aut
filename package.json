@@ -4,9 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@types/inquirer": "^9.0.7",
     "@types/node": "^22.1.0",
     "azure-devops-node-api": "^14.0.1",
     "dotenv": "^16.4.5",
+    "inquirer": "^12.5.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },

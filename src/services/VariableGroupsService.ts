@@ -1,6 +1,6 @@
 import { getTaskAgentApi } from './AZDevopsApiService';
 import { ITaskAgentApi } from 'azure-devops-node-api/TaskAgentApi';
-import { PROJECT_NAME, VARIABLE_GROUP_NEMOTECNIC_NAME , ENVIRONMENT_NAME } from "../environment";
+import { PROJECT_NAME, VARIABLE_GROUP_NEMOTECNIC_NAME , ENVIRONMENT_NAME } from "../../environment";
 import { VariableGroup, VariableValue } from 'azure-devops-node-api/interfaces/TaskAgentInterfaces';
 
 interface IVariable {
@@ -17,7 +17,7 @@ export async function creatOrEditVariable(groupName: string, variables: IVariabl
         if (Array.isArray(variableGroups) && variableGroups.length > 0) {
             let variableGroupId:number = variableGroups[0].id ?? 0;
             let variableGroup:VariableGroup = await taskAgentApi.getVariableGroup(PROJECT_NAME, variableGroupId);
-            let transformedVariables:{ [key: string]: VariableValue; } = convertVariables(variables);
+            let transformedVariables:{ [key: string]: VariableValue; } = convertVariables(variables, groupName);
             variableGroup.variables = { ...variableGroup.variables, ...transformedVariables };
             let variableGroupUpdated = await taskAgentApi.updateVariableGroup(variableGroup, variableGroupId);
             console.log(`${groupNameWithNemotecnic} updated.`);
@@ -35,9 +35,9 @@ export async function creatOrEditVariable(groupName: string, variables: IVariabl
 }
 
 
-function convertVariables(variables: IVariable): { [key: string]: VariableValue; } {
+function convertVariables(variables: IVariable, repoName: string): { [key: string]: VariableValue; } {
     return Object.keys(variables).reduce((acc, key) => {
-        acc[key] = { value: variables[key] };
+        acc[key] = { value: variables[key].replace('SERVICE_NAME', repoName) };
         return acc;
     }, {} as { [key: string]: { value: string; }; });
 }

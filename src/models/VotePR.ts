@@ -1,0 +1,7 @@
+export const VotePR = {
+    APPROVED: 10,
+    REJECTED: -10,
+    WAITING_AUTHOR: -5,
+    NO_VOTE: 0,
+    APPROVED_WITH_SUGGESTIONS: 5
+}

@@ -2,7 +2,8 @@ import { WebApi, getPersonalAccessTokenHandler } from 'azure-devops-node-api';
 import { IGitApi } from 'azure-devops-node-api/GitApi';
 import { IRequestHandler } from 'azure-devops-node-api/interfaces/common/VsoBaseInterfaces';
 import { ITaskAgentApi } from 'azure-devops-node-api/TaskAgentApi';
-import { TOKEN, ORG_URL } from '../environment';
+import { TOKEN, ORG_URL } from '../../environment';
+import { IWorkItemTrackingApi } from 'azure-devops-node-api/WorkItemTrackingApi';
 
 
 export async function getGitApi(): Promise<IGitApi> {
@@ -14,6 +15,11 @@ export async function getGitApi(): Promise<IGitApi> {
 export async function getTaskAgentApi(): Promise<ITaskAgentApi> {
     let connection: WebApi = await getConection();
     return await connection.getTaskAgentApi();
+}
+
+export async function getWorkItemTrackingApi(): Promise<IWorkItemTrackingApi> {
+    let connection: WebApi = await getConection();
+    return await connection.getWorkItemTrackingApi();
 }
 
 async function getConection(): Promise<WebApi> {

@@ -7,6 +7,7 @@ export const PROJECT_NAME: string = process.env.PROJECT_NAME ?? "";
 export const PR_TITLE: string = process.env.TITLE_PR ?? "";
 export const SOURCE_BRANCH: string = process.env.SOURCE_BRANCH ?? "";
 export const TARGET_BRANCH: string = process.env.TARGET_BRANCH ?? "";
+export const NEW_BRANCH: string = process.env.NEW_BRANCH ?? "";
 export const REF_BRANCH: string = "refs/heads/";
 export const VARIABLE_GROUP_NEMOTECNIC_NAME: string  = process.env.VARIABLE_GROUP_NEMOTECNIC_NAME ?? "";
 export const ENVIRONMENT_NAME: string = process.env.ENVIRONMENT_NAME ?? "";
